@@ -1,6 +1,6 @@
 # 📚 JM Bot - 同人本子下载与打包机器人
 
-这是一个基于 [Nonebot2](https://v2.nonebot.dev/) + [jmcomic](https://github.com/niuhuan/jmcomic) 封装库开发的 QQ 机器人插件，支持通过命令下载绅士本子，并打包成 PDF 或 ZIP 发送到群聊。
+这是一个基于 [Nonebot2](https://v2.nonebot.dev/) + [jmcomic]([https://github.com/niuhuan/jmcomic](https://github.com/tonquer/JMComic-qt)) 封装库开发的 QQ 机器人插件，支持通过命令下载绅士本子，并打包成 PDF 或 ZIP 发送到群聊。
 
 ---
 
