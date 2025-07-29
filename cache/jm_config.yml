@@ -17,7 +17,7 @@ client:
     type: cffi
   retry_times: 2
 dir_rule:
-  base_dir: 改成你自己的缓存文件夹，这边建议是cache/jm_download文件夹的绝对路径
+  base_dir: F:\Develop\NoneBot2\GenshinRobot\plugins\Nonebot-Napcat-JMcomic-QQBot\cache\jm_download
   rule: Bd_Pname
 download:
   cache: true

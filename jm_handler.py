@@ -50,16 +50,16 @@ jmzip_handler = on_message(rule=Rule(jmzip_command_rule), priority=5)
 
 async def send_group_file(bot: Bot, event: MessageEvent, file_path: str):
     if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
-        await bot.send(event, "❌ 抱歉阁下，您请求的文件，我没有找到呢，因此暂时无法上传...")
+        await bot.send(event, "❌ 抱歉博士，白面在数据库中未检索到该文件，无法上传...")
         return
 
     file_size_mb = os.path.getsize(file_path) / 1024 / 1024
     if file_size_mb > 90:
-        await bot.send(event, f"⚠️ 阁下需要的资源体积较大（{file_size_mb:.2f} MB），大地兽的搬运工作可能需要一点时间，还请阁下耐心一些…")
+        await bot.send(event, f"⚠️ 博士，由于您申请的资源体积较大（{file_size_mb:.2f} MB），白面正在向凯尔希申请带宽权限，还请博士耐心一些…")
 
     try:
         if not hasattr(event, "group_id"):
-            await bot.send(event, "❗ 阁下，由于石板的功能有限，请阁下在群聊中使用该命令")
+            await bot.send(event, "❗ 由于白面服务受到限制，请博士在群聊中使用该命令")
             return
 
         group_id = event.group_id
@@ -74,7 +74,7 @@ async def send_group_file(bot: Bot, event: MessageEvent, file_path: str):
         )
 
         # 发送提示消息
-        await bot.send(event, f"[文件]{file_name} 上传成功，奇美拉将在一分半后销毁它…")
+        await bot.send(event, f"[文件]{file_name} 上传成功，白面将在一分半后销毁它…")
 
         # 等待一段时间，确保上传完成后文件出现在群文件列表中
         await asyncio.sleep(5)
@@ -93,7 +93,7 @@ async def send_group_file(bot: Bot, event: MessageEvent, file_path: str):
                 break
 
         if not target_file:
-            await bot.send(event, "⚠️ 抱歉阁下，我没有找到上传后的群文件，可能已经被奇美拉弄坏了...")
+            await bot.send(event, "⚠️ 抱歉博士，未查询到上传后的群文件，可能已被其它干员销毁")
             return
 
         # 延迟删除
@@ -106,7 +106,7 @@ async def send_group_file(bot: Bot, event: MessageEvent, file_path: str):
         )
 
     except Exception as e:
-        await bot.send(event, f"⚠️ 大地兽的搬运或销毁工作出现了一些异常，但仍然有可能成功：{e}")
+        await bot.send(event, f"⚠️ 抱歉博士，连接数据库时出现了一些异常，但仍然有可能成功：{e}")
 
 
 
@@ -116,7 +116,7 @@ async def handle_jm(bot: Bot, event: MessageEvent):
 
     # 防止重复请求
     if active_tasks.get(user_id, False):
-        await bot.send(event, "⏳ 阁下的上一个请求还在处理，稍微耐心一些...")
+        await bot.send(event, "⏳ 博士的上一个请求还在处理，稍微耐心一些...")
         return
 
     active_tasks[user_id] = True
@@ -124,11 +124,11 @@ async def handle_jm(bot: Bot, event: MessageEvent):
     try:
         args = event.get_plaintext().strip().split()
         if len(args) != 2 or not args[1].isdigit():
-            await jm_handler.finish("❗ 阁下，请注意吟唱格式: .JM [本子ID]，例如 .JM 472537")
+            await jm_handler.finish("❗ 博士，请注意吟唱格式: .JM [本子ID]，例如 .JM 472537")
 
         album_id = args[1]
 
-        await bot.send(event, f"📥 已接收到阁下的请求，开始收集材料 {album_id}，请稍候…")
+        await bot.send(event, f"📥 已接收到博士的请求，开始收集材料 {album_id}，请稍候…")
 
 
         safe_cleanup(user_id, album_id)
@@ -138,7 +138,7 @@ async def handle_jm(bot: Bot, event: MessageEvent):
 
         album_dir = move_album_dirs_by_photo_titles(album, user_id)
         if not os.path.exists(album_dir):
-            await jm_handler.finish("❌ 抱歉阁下，下载任务失败了：可能是主目录不存在")
+            await jm_handler.finish("❌ 抱歉博士，下载任务失败了：可能是主目录不存在")
 
         subdirs = sorted([
             d for d in os.listdir(album_dir)
@@ -164,7 +164,7 @@ async def handle_jm(bot: Bot, event: MessageEvent):
         else:
             pdf_paths = await asyncio.to_thread(batch_chapter_to_pdfs, album_dir)
             if not pdf_paths:
-                await jm_handler.finish("❌ 抱歉阁下，我暂时没有发现可以打包的 章节PDF 文件")
+                await jm_handler.finish("❌ 抱歉博士，我暂时没有发现可以打包的 章节PDF 文件")
             zip_path = os.path.join(album_dir, f"{album_id}.zip")
             await asyncio.to_thread(zip_pdfs, pdf_paths, zip_path)
             await send_group_file(bot, event, zip_path)
@@ -185,7 +185,7 @@ async def handle_jmzip(bot: Bot, event: MessageEvent):
     user_id = str(event.user_id)
 
     if active_tasks.get(user_id, False):
-        await bot.send(event, "⏳ 阁下的上一个请求还在处理，稍微耐心一些...")
+        await bot.send(event, "⏳ 博士的上一个请求还在处理，稍微耐心一些...")
         return
 
     active_tasks[user_id] = True
@@ -193,7 +193,7 @@ async def handle_jmzip(bot: Bot, event: MessageEvent):
     try:
         args = event.get_plaintext().strip().split()
         if len(args) != 2 or not args[1].isdigit():
-            await jmzip_handler.finish("❗ 阁下，请注意吟唱格式: .JMZIP [本子ID]，例如 .JMZIP 472537")
+            await jmzip_handler.finish("❗ 博士，请注意吟唱格式: .JMZIP [本子ID]，例如 .JMZIP 472537")
 
         album_id = args[1]
         album_dir = os.path.join(JM_DOWNLOAD_DIR, user_id, album_id)
@@ -201,12 +201,12 @@ async def handle_jmzip(bot: Bot, event: MessageEvent):
         zip_path = os.path.join(album_dir, f"{album_id}.zip")
 
         if not os.path.exists(album_dir):
-            await jmzip_handler.finish("❌ 阁下所需要的材料还未缓存，请先使用 .JM 下载")
+            await jmzip_handler.finish("❌ 博士所需要的材料还未缓存，请先使用 .JM 下载")
 
         if not os.path.exists(zip_path):
             pdf_paths = await asyncio.to_thread(batch_chapter_to_pdfs, album_dir)
             if not pdf_paths:
-                await jmzip_handler.finish("❌ 抱歉阁下，我暂时没有发现可以打包的 PDF 文件")
+                await jmzip_handler.finish("❌ 抱歉博士，我暂时没有发现可以打包的 PDF 文件")
             await asyncio.to_thread(zip_pdfs, pdf_paths, zip_path)
 
         await send_group_file(bot, event, zip_path)
@@ -232,7 +232,7 @@ import random
 #     user_id = str(event.user_id)
 #
 #     if active_tasks.get(user_id, False):
-#         await bot.send(event, "⏳ 阁下的上一个请求还在处理，稍微耐心一些...")
+#         await bot.send(event, "⏳ 博士的上一个请求还在处理，稍微耐心一些...")
 #         return
 #
 #     active_tasks[user_id] = True
@@ -282,7 +282,7 @@ import random
 #         else:
 #             pdf_paths = await asyncio.to_thread(batch_chapter_to_pdfs, album_dir)
 #             if not pdf_paths:
-#                 await suiji_jm_handler.finish("❌ 抱歉阁下，我暂时没有发现可以打包的 章节PDF 文件")
+#                 await suiji_jm_handler.finish("❌ 抱歉博士，我暂时没有发现可以打包的 章节PDF 文件")
 #             zip_path = os.path.join(album_dir, f"{album_id}.zip")
 #             await asyncio.to_thread(zip_pdfs, pdf_paths, zip_path)
 #             await send_group_file(bot, event, zip_path)
